@@ -70,7 +70,24 @@ power-automate/
     └── sample-workday-email.txt       # Sample email for testing
 ```
 
+## Implementation Options
+
+### Option 1: Simple Email-Only Approach (15 minutes)
+**Best for:** Small teams, quick setup, minimal maintenance
+- Single flow: Email arrives → Parse → Send reminder
+- No storage required
+- No daily reminders or tracking
+- See `SIMPLE_EMAIL_ONLY.md` for setup
+
+### Option 2: Full Solution with Storage (90 minutes)
+**Best for:** Organizations, comprehensive tracking, daily reminders
+- Multiple flows with SharePoint/Excel storage
+- Daily reminders, escalation alerts, weekly summaries
+- Complete tracking and reporting
+- See `IMPORT_GUIDE.md` for setup
+
 ## Next Steps
-1. Map this into a **Power Automate trigger → filter → parse → reminder flow**
-2. Create a **developer flow blueprint**
-3. Draft a **technical assumption & constraint section** for documentation or PPT
+1. Choose your approach (Simple vs Full)
+2. Follow the respective guide
+3. Test with sample Workday emails
+4. Deploy to your team
