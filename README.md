@@ -72,7 +72,14 @@ power-automate/
 
 ## Implementation Options
 
-### Option 1: Simple Email-Only Approach (15 minutes)
+### Option 1: Ultra Simple - Training Name + URL Only (10 minutes) ⭐ RECOMMENDED
+**Best for:** Accenture Workday users, instant notifications, zero maintenance
+- Extract training name and URL only
+- Send: "You are enrolled in [Training]"
+- No due dates, no storage, no complexity
+- **See `ULTRA_SIMPLE_SETUP.md` for step-by-step guide**
+
+### Option 2: Simple Email-Only Approach (15 minutes)
 **Best for:** Small teams, quick setup, minimal maintenance
 - Single flow: Email arrives → Parse → Send reminder
 - No storage required
@@ -80,7 +87,7 @@ power-automate/
 - See `SIMPLE_EMAIL_ONLY.md` for setup
 - **For Accenture Workday emails:** See `CUSTOM_EMAIL_FORMAT.md` for your specific format
 
-### Option 2: Full Solution with Storage (90 minutes)
+### Option 3: Full Solution with Storage (90 minutes)
 **Best for:** Organizations, comprehensive tracking, daily reminders
 - Multiple flows with SharePoint/Excel storage
 - Daily reminders, escalation alerts, weekly summaries
