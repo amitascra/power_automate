@@ -78,6 +78,7 @@ power-automate/
 - No storage required
 - No daily reminders or tracking
 - See `SIMPLE_EMAIL_ONLY.md` for setup
+- **For Accenture Workday emails:** See `CUSTOM_EMAIL_FORMAT.md` for your specific format
 
 ### Option 2: Full Solution with Storage (90 minutes)
 **Best for:** Organizations, comprehensive tracking, daily reminders

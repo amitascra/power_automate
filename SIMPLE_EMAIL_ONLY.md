@@ -1,6 +1,8 @@
 # Simple Email-Only Approach
 ## Immediate Reminder When Workday Email Arrives
 
+> **📌 Note:** If you're using **Accenture Workday** emails (format: "You are now enrolled in..."), see `CUSTOM_EMAIL_FORMAT.md` for parsing expressions specific to your email format.
+
 ---
 
 ## 🎯 What This Does
