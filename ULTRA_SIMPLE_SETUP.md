@@ -36,12 +36,22 @@ Include Attachments: No
 
 ### Step 3: Add Condition
 
-Click **"+ New step"** → Search **"Condition"**
+Click **"+ New step"** → Search **"Condition"** → Select **"Condition" (Control)**
 
-```
-Condition:
-Body contains "enrolled in"
-```
+**Configure the condition with 3 fields:**
+
+1. **First field (left box):**
+   - Click in the box
+   - Click "Add dynamic content" (lightning bolt icon)
+   - Under "When a new email arrives", select **"Body"**
+
+2. **Second field (middle dropdown):**
+   - Select **"contains"**
+
+3. **Third field (right box):**
+   - Type: `enrolled in`
+
+**Result should show:** `If Body contains enrolled in`
 
 ---
 
