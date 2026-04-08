@@ -1,0 +1,47 @@
+# Power Automate Project .gitignore
+
+# Environment-specific files
+*.env
+.env.local
+.env.production
+
+# Sensitive configuration
+config.json
+secrets.json
+credentials.json
+
+# Power Automate export files (if containing sensitive data)
+# Uncomment if needed:
+# *.zip
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Backup files
+*.bak
+*.backup
+
+# Documentation builds
+docs/_build/
+site/
+
+# Test data with real emails/PII
+test-data/real-emails/

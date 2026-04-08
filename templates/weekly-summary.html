@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Learning Summary</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #0078d4;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #0078d4;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        .date {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-card.completed {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+        .stat-card.pending {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .stat-card.overdue {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .completion-rate {
+            background: linear-gradient(135deg, #0078d4 0%, #00bcf2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .completion-rate .percentage {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        .section-title {
+            color: #0078d4;
+            font-size: 20px;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .training-list {
+            list-style: none;
+            padding: 0;
+        }
+        .training-item {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0078d4;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .training-item.overdue {
+            border-left-color: #d13438;
+            background-color: #fff5f5;
+        }
+        .training-item.due-soon {
+            border-left-color: #ff8c00;
+            background-color: #fffbf0;
+        }
+        .training-name {
+            font-weight: bold;
+            color: #212529;
+            margin-bottom: 5px;
+        }
+        .training-details {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge.overdue {
+            background-color: #d13438;
+            color: white;
+        }
+        .badge.due-soon {
+            background-color: #ff8c00;
+            color: white;
+        }
+        .badge.pending {
+            background-color: #6c757d;
+            color: white;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #0078d4;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .cta-button:hover {
+            background-color: #005a9e;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .empty-state img {
+            width: 100px;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Weekly Learning Summary</h1>
+            <p class="date">${WeekStartDate} - ${WeekEndDate}</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Trainings</div>
+                <div class="stat-number">${TotalCount}</div>
+            </div>
+            <div class="stat-card completed">
+                <div class="stat-label">Completed</div>
+                <div class="stat-number">${CompletedCount}</div>
+            </div>
+            <div class="stat-card pending">
+                <div class="stat-label">Pending</div>
+                <div class="stat-number">${PendingCount}</div>
+            </div>
+            <div class="stat-card overdue">
+                <div class="stat-label">Overdue</div>
+                <div class="stat-number">${OverdueCount}</div>
+            </div>
+        </div>
+
+        <div class="completion-rate">
+            <div class="stat-label">Overall Completion Rate</div>
+            <div class="percentage">${CompletionRate}%</div>
+        </div>
+
+        <!-- Overdue Trainings Section -->
+        ${OverdueSection}
+
+        <!-- Due Soon Trainings Section -->
+        ${DueSoonSection}
+
+        <!-- Pending Trainings Section -->
+        ${PendingSection}
+
+        <!-- Completed This Week Section -->
+        ${CompletedThisWeekSection}
+
+        <div class="cta-section">
+            <a href="https://workday.company.com/learning" class="cta-button">
+                View All Trainings
+            </a>
+            <a href="${SharePointListUrl}" class="cta-button">
+                View Tracker Dashboard
+            </a>
+        </div>
+
+        <div class="footer">
+            <p><strong>Keep up the great work! 🎓</strong></p>
+            <p>This is an automated weekly summary from the Workday Learning & Certification Tracker.</p>
+            <p>For questions or support, contact your HR department.</p>
+        </div>
+    </div>
+</body>
+</html>

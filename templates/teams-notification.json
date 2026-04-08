@@ -1,0 +1,102 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.4",
+  "body": [
+    {
+      "type": "Container",
+      "style": "emphasis",
+      "items": [
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "auto",
+              "items": [
+                {
+                  "type": "Image",
+                  "url": "https://img.icons8.com/fluency/48/000000/training.png",
+                  "size": "Medium"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "text": "Training Reminder",
+                  "weight": "Bolder",
+                  "size": "Large",
+                  "wrap": true
+                },
+                {
+                  "type": "TextBlock",
+                  "text": "${Status}",
+                  "color": "${StatusColor}",
+                  "weight": "Bolder",
+                  "spacing": "None"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "spacing": "Medium",
+      "items": [
+        {
+          "type": "FactSet",
+          "facts": [
+            {
+              "title": "Training:",
+              "value": "${TrainingName}"
+            },
+            {
+              "title": "Due Date:",
+              "value": "${DueDate}"
+            },
+            {
+              "title": "Days Remaining:",
+              "value": "${DaysRemaining}"
+            },
+            {
+              "title": "Priority:",
+              "value": "${Priority}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "spacing": "Medium",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${ReminderMessage}",
+          "wrap": true,
+          "color": "${MessageColor}"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "Complete Training Now",
+      "url": "${ActionLink}",
+      "style": "positive"
+    },
+    {
+      "type": "Action.OpenUrl",
+      "title": "View All Trainings",
+      "url": "https://workday.company.com/learning",
+      "style": "default"
+    }
+  ]
+}

@@ -1,0 +1,416 @@
+{
+  "name": "Workday Training Tracker - Complete Solution",
+  "description": "Power Automate flow schema for tracking Workday trainings and certifications",
+  "version": "1.0.0",
+  "flows": [
+    {
+      "flowName": "Email Processor",
+      "flowType": "Automated",
+      "trigger": {
+        "type": "Office365Outlook.OnNewEmailV3",
+        "parameters": {
+          "folderPath": "Inbox",
+          "from": "workday@company.com",
+          "importance": "Any",
+          "includeAttachments": false,
+          "subjectFilter": ""
+        }
+      },
+      "actions": [
+        {
+          "name": "Filter_Email",
+          "type": "Condition",
+          "expression": "or(or(contains(triggerOutputs()?['subject'], 'Training'), contains(triggerOutputs()?['subject'], 'Certification')), contains(triggerOutputs()?['subject'], 'Learning'))"
+        },
+        {
+          "name": "Initialize_EmailBody",
+          "type": "InitializeVariable",
+          "variableName": "EmailBody",
+          "variableType": "String",
+          "value": "@triggerOutputs()?['body/body']"
+        },
+        {
+          "name": "Initialize_TrainingName",
+          "type": "InitializeVariable",
+          "variableName": "TrainingName",
+          "variableType": "String",
+          "value": "@if(contains(variables('EmailBody'), 'Course:'), substring(variables('EmailBody'), add(indexOf(variables('EmailBody'), 'Course:'), 8), sub(indexOf(variables('EmailBody'), '\n', add(indexOf(variables('EmailBody'), 'Course:'), 8)), add(indexOf(variables('EmailBody'), 'Course:'), 8))), triggerOutputs()?['subject'])"
+        },
+        {
+          "name": "Initialize_DueDate",
+          "type": "InitializeVariable",
+          "variableName": "DueDate",
+          "variableType": "String",
+          "value": "@substring(variables('EmailBody'), add(indexOf(variables('EmailBody'), 'Due Date:'), 10), 10)"
+        },
+        {
+          "name": "Initialize_ActionLink",
+          "type": "InitializeVariable",
+          "variableName": "ActionLink",
+          "variableType": "String",
+          "value": "@substring(variables('EmailBody'), indexOf(variables('EmailBody'), 'https://'), sub(indexOf(variables('EmailBody'), '\n', indexOf(variables('EmailBody'), 'https://')), indexOf(variables('EmailBody'), 'https://')))"
+        },
+        {
+          "name": "Initialize_RecipientEmail",
+          "type": "InitializeVariable",
+          "variableName": "RecipientEmail",
+          "variableType": "String",
+          "value": "@triggerOutputs()?['body/to']"
+        },
+        {
+          "name": "Create_Training_Record",
+          "type": "SharePoint.CreateItem",
+          "parameters": {
+            "siteAddress": "https://company.sharepoint.com/sites/TrainingTracker",
+            "listName": "Training Tracker",
+            "fields": {
+              "UserEmail": "@variables('RecipientEmail')",
+              "TrainingName": "@variables('TrainingName')",
+              "DueDate": "@variables('DueDate')",
+              "Status": "Pending",
+              "ActionLink": "@variables('ActionLink')",
+              "CreatedDate": "@utcNow()"
+            }
+          },
+          "runAfter": {
+            "Initialize_RecipientEmail": ["Succeeded"]
+          }
+        },
+        {
+          "name": "Error_Notification",
+          "type": "Office365Outlook.SendEmailV2",
+          "parameters": {
+            "to": "admin@company.com",
+            "subject": "Training Tracker - Parsing Error",
+            "body": "Failed to process email:\n\nFrom: @{triggerOutputs()?['from']}\nSubject: @{triggerOutputs()?['subject']}\nError: @{body('Create_Training_Record')?['error']}"
+          },
+          "runAfter": {
+            "Create_Training_Record": ["Failed"]
+          }
+        }
+      ]
+    },
+    {
+      "flowName": "Daily Reminder",
+      "flowType": "Scheduled",
+      "trigger": {
+        "type": "Recurrence",
+        "parameters": {
+          "frequency": "Day",
+          "interval": 1,
+          "startTime": "2026-04-09T09:00:00Z",
+          "timeZone": "Eastern Standard Time"
+        }
+      },
+      "actions": [
+        {
+          "name": "Get_Pending_Trainings",
+          "type": "SharePoint.GetItems",
+          "parameters": {
+            "siteAddress": "https://company.sharepoint.com/sites/TrainingTracker",
+            "listName": "Training Tracker",
+            "filter": "Status eq 'Pending' or Status eq 'Due Soon'",
+            "top": 1000
+          }
+        },
+        {
+          "name": "Process_Each_Training",
+          "type": "Foreach",
+          "foreach": "@body('Get_Pending_Trainings')?['value']",
+          "actions": [
+            {
+              "name": "Calculate_DaysRemaining",
+              "type": "InitializeVariable",
+              "variableName": "DaysRemaining",
+              "variableType": "Integer",
+              "value": "@div(sub(ticks(items('Process_Each_Training')?['DueDate']), ticks(utcNow())), 864000000000)"
+            },
+            {
+              "name": "Determine_Status",
+              "type": "Condition",
+              "expression": "@lessOrEquals(variables('DaysRemaining'), 0)",
+              "actions": {
+                "ifTrue": [
+                  {
+                    "name": "Set_Status_Overdue",
+                    "type": "SetVariable",
+                    "variableName": "Status",
+                    "value": "Overdue"
+                  },
+                  {
+                    "name": "Set_Priority_Urgent",
+                    "type": "SetVariable",
+                    "variableName": "Priority",
+                    "value": "Urgent"
+                  }
+                ],
+                "ifFalse": [
+                  {
+                    "name": "Check_T1",
+                    "type": "Condition",
+                    "expression": "@lessOrEquals(variables('DaysRemaining'), 1)",
+                    "actions": {
+                      "ifTrue": [
+                        {
+                          "name": "Set_Status_DueSoon_T1",
+                          "type": "SetVariable",
+                          "variableName": "Status",
+                          "value": "Due Soon"
+                        },
+                        {
+                          "name": "Set_Priority_High",
+                          "type": "SetVariable",
+                          "variableName": "Priority",
+                          "value": "High"
+                        }
+                      ],
+                      "ifFalse": [
+                        {
+                          "name": "Check_T3",
+                          "type": "Condition",
+                          "expression": "@lessOrEquals(variables('DaysRemaining'), 3)",
+                          "actions": {
+                            "ifTrue": [
+                              {
+                                "name": "Set_Status_DueSoon_T3",
+                                "type": "SetVariable",
+                                "variableName": "Status",
+                                "value": "Due Soon"
+                              },
+                              {
+                                "name": "Set_Priority_Medium",
+                                "type": "SetVariable",
+                                "variableName": "Priority",
+                                "value": "Medium"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Send_Teams_Notification",
+              "type": "MicrosoftTeams.PostCardToConversation",
+              "parameters": {
+                "recipient": "@items('Process_Each_Training')?['UserEmail']",
+                "card": {
+                  "type": "AdaptiveCard",
+                  "body": "See templates/teams-notification.json"
+                }
+              }
+            },
+            {
+              "name": "Send_Email_Notification",
+              "type": "Office365Outlook.SendEmailV2",
+              "parameters": {
+                "to": "@items('Process_Each_Training')?['UserEmail']",
+                "subject": "[@{variables('Status')}] Training Reminder: @{items('Process_Each_Training')?['TrainingName']}",
+                "body": "See templates/outlook-reminder.html",
+                "importance": "@if(equals(variables('Priority'), 'Urgent'), 'High', 'Normal')"
+              }
+            },
+            {
+              "name": "Update_LastReminderSent",
+              "type": "SharePoint.UpdateItem",
+              "parameters": {
+                "siteAddress": "https://company.sharepoint.com/sites/TrainingTracker",
+                "listName": "Training Tracker",
+                "id": "@items('Process_Each_Training')?['ID']",
+                "fields": {
+                  "LastReminderSent": "@utcNow()",
+                  "Status": "@variables('Status')"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "flowName": "Weekly Summary",
+      "flowType": "Scheduled",
+      "trigger": {
+        "type": "Recurrence",
+        "parameters": {
+          "frequency": "Week",
+          "interval": 1,
+          "daysOfWeek": ["Monday"],
+          "startTime": "2026-04-13T09:00:00Z",
+          "timeZone": "Eastern Standard Time"
+        }
+      },
+      "actions": [
+        {
+          "name": "Get_All_Trainings",
+          "type": "SharePoint.GetItems",
+          "parameters": {
+            "siteAddress": "https://company.sharepoint.com/sites/TrainingTracker",
+            "listName": "Training Tracker"
+          }
+        },
+        {
+          "name": "Calculate_TotalCount",
+          "type": "InitializeVariable",
+          "variableName": "TotalCount",
+          "variableType": "Integer",
+          "value": "@length(body('Get_All_Trainings')?['value'])"
+        },
+        {
+          "name": "Calculate_CompletedCount",
+          "type": "InitializeVariable",
+          "variableName": "CompletedCount",
+          "variableType": "Integer",
+          "value": "@length(filter(body('Get_All_Trainings')?['value'], item => equals(item?['Status'], 'Completed')))"
+        },
+        {
+          "name": "Calculate_PendingCount",
+          "type": "InitializeVariable",
+          "variableName": "PendingCount",
+          "variableType": "Integer",
+          "value": "@length(filter(body('Get_All_Trainings')?['value'], item => equals(item?['Status'], 'Pending')))"
+        },
+        {
+          "name": "Calculate_OverdueCount",
+          "type": "InitializeVariable",
+          "variableName": "OverdueCount",
+          "variableType": "Integer",
+          "value": "@length(filter(body('Get_All_Trainings')?['value'], item => equals(item?['Status'], 'Overdue')))"
+        },
+        {
+          "name": "Calculate_CompletionRate",
+          "type": "InitializeVariable",
+          "variableName": "CompletionRate",
+          "variableType": "Float",
+          "value": "@if(greater(variables('TotalCount'), 0), mul(div(variables('CompletedCount'), variables('TotalCount')), 100), 0)"
+        },
+        {
+          "name": "Send_Weekly_Summary",
+          "type": "Office365Outlook.SendEmailV2",
+          "parameters": {
+            "to": "users@company.com",
+            "subject": "Weekly Learning Summary - @{formatDateTime(utcNow(), 'MMM dd, yyyy')}",
+            "body": "HTML template with statistics"
+          }
+        }
+      ]
+    },
+    {
+      "flowName": "Completion Detector",
+      "flowType": "Automated",
+      "trigger": {
+        "type": "Office365Outlook.OnNewEmailV3",
+        "parameters": {
+          "folderPath": "Inbox",
+          "from": "workday@company.com",
+          "subjectFilter": "Completed|Congratulations|Certificate"
+        }
+      },
+      "actions": [
+        {
+          "name": "Parse_TrainingName",
+          "type": "InitializeVariable",
+          "variableName": "CompletedTrainingName",
+          "variableType": "String",
+          "value": "@substring(triggerOutputs()?['body/body'], add(indexOf(triggerOutputs()?['body/body'], 'Course:'), 8), 100)"
+        },
+        {
+          "name": "Get_Training_Record",
+          "type": "SharePoint.GetItems",
+          "parameters": {
+            "siteAddress": "https://company.sharepoint.com/sites/TrainingTracker",
+            "listName": "Training Tracker",
+            "filter": "TrainingName eq '@{variables('CompletedTrainingName')}' and Status ne 'Completed'"
+          }
+        },
+        {
+          "name": "Update_To_Completed",
+          "type": "SharePoint.UpdateItem",
+          "parameters": {
+            "siteAddress": "https://company.sharepoint.com/sites/TrainingTracker",
+            "listName": "Training Tracker",
+            "id": "@first(body('Get_Training_Record')?['value'])?['ID']",
+            "fields": {
+              "Status": "Completed",
+              "CompletedDate": "@utcNow()"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "dataSchema": {
+    "storageType": "SharePoint List",
+    "listName": "Training Tracker",
+    "columns": [
+      {
+        "name": "TrainingID",
+        "type": "Text",
+        "required": false,
+        "description": "Auto-generated unique identifier"
+      },
+      {
+        "name": "UserEmail",
+        "type": "Text",
+        "required": true,
+        "description": "Email address of the user assigned the training"
+      },
+      {
+        "name": "TrainingName",
+        "type": "Text",
+        "required": true,
+        "description": "Name of the training or certification"
+      },
+      {
+        "name": "DueDate",
+        "type": "DateTime",
+        "required": true,
+        "description": "Deadline for completing the training"
+      },
+      {
+        "name": "Status",
+        "type": "Choice",
+        "choices": ["Pending", "Due Soon", "Overdue", "Completed"],
+        "required": true,
+        "description": "Current status of the training"
+      },
+      {
+        "name": "ActionLink",
+        "type": "Hyperlink",
+        "required": false,
+        "description": "URL to access the training in Workday"
+      },
+      {
+        "name": "LastReminderSent",
+        "type": "DateTime",
+        "required": false,
+        "description": "Timestamp of the last reminder sent"
+      },
+      {
+        "name": "CreatedDate",
+        "type": "DateTime",
+        "required": true,
+        "description": "Date when the training record was created"
+      },
+      {
+        "name": "CompletedDate",
+        "type": "DateTime",
+        "required": false,
+        "description": "Date when the training was completed"
+      }
+    ]
+  },
+  "configuration": {
+    "workdaySenderEmail": "workday@company.com",
+    "reminderTime": "09:00 AM",
+    "timeZone": "Eastern Standard Time",
+    "escalationDays": {
+      "t3": 3,
+      "t1": 1
+    },
+    "adminEmail": "admin@company.com"
+  }
+}
